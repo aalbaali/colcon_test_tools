@@ -34,28 +34,60 @@ __list_tests() {
 colcon_test() {
   if [ -z $1 ]
   then
+    local test_input=$(__list_tests_full_path)
     echo -e "\033[93;1mRunning all tests\033[0m"
+    echo -e "\n\033[96m"
+
+    # Print the tests
+    for t in $test_input
+    do
+      echo $t
+    done
+    echo -e "\033[0m"
     echo -e "\n\033[93;1m-----------------\033[0m\n"
   elif [ -z $2 ]
   then
+    local test_input=$(__list_tests_full_path $1)
     echo -e "\033[93mRunning all tests for \033[1m'$1'\033[0;93m package\033[0m"
+    echo -e "\n\033[96m"
+
+    # Print test (short) names
+    for t in $(__list_tests $1)
+    do
+      echo $t
+    done
+    echo -e "\033[0m"
     echo -e "\n\033[93;1m-----------------\033[0m\n"
+  else
+    # Go over all arguments except the first (which is the package name)
+    local test_input="${@:2}"
   fi
 
-  local tests="$(__list_tests_full_path $1 | rg $2\$)"
-  if [ -n "$tests" ]
-  then
-    for test in $tests
-    do
-      echo -e "\033[36m-------------------------------\033[0m"
-      echo -e "\033[36mTest: \033[96;1m$test\033[0m"
-      echo -e "\033[36m-------------------------------\033[0m"
-      $test
-    done
-  else
-    echo -e "\033[91mProvided package \033[93;1m'$1'\033[0;91m and/or test \033[93;1m'$2'\033[0;91m are not valid"
-    echo -e "\n\033[93mUse tab autocompletion to list \033[3mexecutable\033[0;93m packages and tests\033[0m"
-  fi
+  for test_name in $test_input
+  do
+    local tests="$(__list_tests_full_path $1 | rg $test_name\$)"
+    if [ -n "$tests" ]
+    then
+      for test in $tests
+      do
+        echo -e "\033[36m-------------------------------\033[0m"
+        echo -e "\033[36mTest: \033[96;1m$test\033[0m"
+        echo -e "\033[36m-------------------------------\033[0m"
+        $test
+      done
+    else
+      # Check if package exists
+      if [ -z __list_colcon_pkgs $1 ]
+      then
+        echo -e "\033[91mProvided package \033[93;1m'$1'\033[0;91m is not found"
+        echo -e "\n\033[93mTo list colcon packages, run '\033[93;1mcolcon_cd && colcon_list\033[0;93m' \033[0m"
+      else
+        echo -e "\033[91mTest \033[93;1m'$test_name'\033[0;91m is not available for the package \033[93;1m'$1'\033[0m"
+        echo -e "\n\033[92mTo list available tests for a given package, run '\033[93;1m__list_tests <package-name>\033[0;92m' \033[0m"
+      fi
+      echo -e "\033[93mUse tab autocompletion to list \033[3mexecutable\033[0;93m packages and tests\033[0m"
+    fi
+  done
 }
 
 
@@ -89,8 +121,6 @@ __list_of_script_funcs() {
 # Add the bash autocomplete commands
 # When running a script, call `source run_tests.sh __add_complete_commands`
 __add_complete_commands() {
-  # TODO: abort/warn if more than an argument is passed
-
   local cur prev
 
   local cmd="${1##*/}"
@@ -108,6 +138,11 @@ __add_complete_commands() {
     # Print suggestions line by line
     suggestions=( $(compgen -W "$(__list_of_testable_packages)" -- $cur) )
     COMPREPLY=("${suggestions[@]}")
+
+  elif [ $COMP_CWORD -ge 2 ]; then
+    # Tests for a given package
+    suggestions=( $(compgen -W "$(__list_tests ${COMP_WORDS[1]})" -- $cur) )
+    COMPREPLY=("${suggestions[@]}")  
   fi
 }
 

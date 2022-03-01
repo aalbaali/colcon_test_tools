@@ -118,7 +118,6 @@ __list_of_script_funcs() {
 
 # Helpful reference for writing completion scripts: https://iridakos.com/programming/2018/03/01/bash-programmable-completion-tutorial
 # Add the bash autocomplete commands
-# When running a script, call `source run_tests.sh __add_complete_commands`
 __add_complete_commands() {
   local cur prev
 

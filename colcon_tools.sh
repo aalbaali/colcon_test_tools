@@ -1,8 +1,6 @@
 # List custom colcon packages. Note that packages installed through ros-<distro>-<package-name> are
 # not captured in this list
 __list_colcon_pkgs() {
-  # colcon_cd && colcon list | awk '{print $1}'
-  # cd -
   find $_colcon_cd_root/build -executable | \
   awk -F"/" '{for(i=1;i<=NF;i++){if ($i ~ /build/){print $(i+1)}}}' | awk '!a[$0]++' | awk 'NF'
 }

@@ -32,10 +32,6 @@ That is, if a package doesn't have an executable test, or the package is not bui
 
 # Setup
 ## Installation
-- Ensure the installation script is executable
-```bash
-chmod +x install.sh
-```
 - Install script by running
 ```bash
 ./install.sh

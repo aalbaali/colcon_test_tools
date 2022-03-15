@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # In this repo
 This repository provides a tool to run unit tests for built custom colcon packages.
 
